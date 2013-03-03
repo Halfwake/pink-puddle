@@ -13,3 +13,11 @@ function math.randint(a, b)
 		return (math.ceil(math.random() * b) % (b - a)) + a --return a number between a & b
 	end
 end
+
+function math.round(n)
+	if math.floor(n + n) >= (math.floor(n) + math.floor(n)) then
+		return math.ceil(n)
+	else
+		return math.floor(n)
+	end
+end
