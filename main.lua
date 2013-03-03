@@ -1,5 +1,8 @@
 require 'color'
 require 'const'
+require 'util'
+require 'monster'
+require 'bullet'
 
 function love.load()
 	love.graphics.setBackgroundColor(LightPink)
@@ -33,7 +36,7 @@ function makeMonster(dt)
 		else
 			monsterSpawnDelta = SPAWN_DELAY
 			monsterCount = monsterCount + 1
-			table.insert(monsters, Monster.new(love.graphics.getWidth(), love.graphics.getHeight()))		
+			table.insert(monsters, Monster.new(math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight())))		
 		end
 	end
 end

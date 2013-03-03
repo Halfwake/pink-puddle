@@ -5,3 +5,11 @@ function table.shallow_copy(original_table)
 	end
 	return new_table
 end
+
+function math.randint(a, b)
+	if not b then
+		return math.random() % a
+	else
+		(math.random() % (a - b)) + a --return a number between a & b
+	end
+end
