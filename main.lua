@@ -9,22 +9,23 @@ function love.load()
 	math.randomseed(os.time())
 	love.graphics.setCaption("Pink Puddle")
 	love.graphics.setBackgroundColor(LightPink)
-	player = Player.new(0, 0)
+	player = Player.new(30, 30)
 	monsters = Monster.monsters
 	monsterCount = 0
-	bullets = Monster.monsters
+	bullets = Bullet.bullets
 	bulletCount = 0
 	monsterSpawnDelta = SPAWN_DELAY
 end
 
 function love.draw()
+	love.graphics.clear()
 	for _, bullet in pairs(bullets) do bullet:addBatch() end
 	for _, monster in pairs(monsters) do monster:addBatch() end
-	love.graphics.draw(Bullet.batch)
 	love.graphics.draw(Monster.batch)
-	player:draw()
+	love.graphics.draw(Bullet.batch)
 	Bullet.batch:clear()
 	Monster.batch:clear()
+	player:draw()
 end
 
 function love.update(dt)
@@ -34,7 +35,7 @@ function love.update(dt)
 		if dead then bullets[dead] = nil end
 	end
 	for _, monster in pairs(monsters) do
-		local dead = monster:update(dt, player)
+		local dead = monster:update(dt)
 		if dead then monsters[dead] = nil end
 	end 
 end
@@ -46,7 +47,7 @@ function makeMonster(dt)
 		else
 			monsterSpawnDelta = SPAWN_DELAY
 			monsterCount = monsterCount + 1
-			table.insert(monsters, Monster.new(math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight())))		
+			table.insert(monsters, Monster.new(math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight()), player))		
 		end
 	end
 end

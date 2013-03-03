@@ -9,8 +9,8 @@ Bullet.batch = love.graphics.newSpriteBatch(IMAGE.bullet, MAX_BULLETS, "stream")
 local bulletTemplate = {}
 
 function bulletTemplate:move(dt)
-	self.x = self.x + (self.dx * dt)
-	self.y = self.y + (self.dy * dt)
+	self.x = self.x + self.dx * dt * self.speed
+	self.y = self.y + self.dy * dt * self.speed
 end
 
 function bulletTemplate:update(dt)
@@ -35,12 +35,13 @@ function bulletTemplate:setDelta(dx, dy)
 end
 
 function Bullet.new(x, y, dx, dy, orientation)
-	newBullet = table.shallow_copy(bulletTemplate)
+	local newBullet = table.shallow_copy(bulletTemplate)
 	newBullet.x = x
 	newBullet.y = y
 	newBullet.dx = dx
 	newBullet.dy = dy
 	newBullet.orientation = 0
+	newBullet.speed = 500
 	return newBullet
 end
 
