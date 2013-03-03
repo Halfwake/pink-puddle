@@ -10,9 +10,9 @@ function love.load()
 	love.graphics.setCaption("Pink Puddle")
 	love.graphics.setBackgroundColor(LightPink)
 	player = Player.new(0, 0)
-	monsters = {}
+	monsters = Monster.monsters
 	monsterCount = 0
-	bullets = {}
+	bullets = Monster.monsters
 	bulletCount = 0
 	monsterSpawnDelta = SPAWN_DELAY
 end
@@ -29,8 +29,14 @@ end
 
 function love.update(dt)
 	makeMonster(dt)
-	for _, bullet in pairs(bullets) do bullet:update() end
-	for _, monster in pairs(monsters) do monster:update() end 
+	for _, bullet in pairs(bullets) do
+		local dead = bullet:update(dt)
+		if dead then bullets[dead] = nil end
+	end
+	for _, monster in pairs(monsters) do
+		local dead = monster:update(dt, player)
+		if dead then monsters[dead] = nil end
+	end 
 end
 
 function makeMonster(dt)
