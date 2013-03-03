@@ -7,6 +7,7 @@ require 'player'
 
 function love.load()
 	math.randomseed(os.time())
+	love.graphics.setCaption("Pink Puddle")
 	love.graphics.setBackgroundColor(LightPink)
 	player = Player.new(0, 0)
 	monsters = {}
