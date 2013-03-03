@@ -1,0 +1,39 @@
+require 'color'
+require 'const'
+
+function love.load()
+	love.graphics.setBackgroundColor(LightPink)
+	player = Player.new()
+	monsters = {}
+	monsterCount = 0
+	bullets = {}
+	bulletCount = 0
+	monsterSpawnDelta = SPAWN_DELAY
+end
+
+function love.draw()
+	love.graphics.clear()
+	Bullet.batch.draw()
+	Monster.batch.draw()
+	player:draw()
+	Bullet.batch:clear()
+	Monster.batch:clear()
+end
+
+function love.update(dt)
+	makeMonster(dt)
+	for _, bullet in pairs(bullets) do bullet:update() end
+	for _, monster in pairs(monsters) do monsters:update() end 
+end
+
+function makeMonster(dt)
+	if monsterCount < MAX_MONSTERS then
+		if monsterSpawnDelta > 0 then
+			monsterSpawnDelta = monsterSpawnDelta - dt
+		else
+			monsterSpawnDelta = SPAWN_DELAY
+			monsterCount = monsterCount + 1
+			table.insert(monsters, Monster.new(love.graphics.getWidth(), love.graphics.getHeight()))		
+		end
+	end
+end
