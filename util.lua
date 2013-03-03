@@ -10,6 +10,6 @@ function math.randint(a, b)
 	if not b then
 		return math.random() % a
 	else
-		(math.random() % (a - b)) + a --return a number between a & b
+		return (math.random() % (a - b)) + a --return a number between a & b
 	end
 end

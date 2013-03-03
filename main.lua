@@ -3,10 +3,11 @@ require 'const'
 require 'util'
 require 'monster'
 require 'bullet'
+require 'player'
 
 function love.load()
 	love.graphics.setBackgroundColor(LightPink)
-	player = Player.new()
+	player = Player.new(0, 0)
 	monsters = {}
 	monsterCount = 0
 	bullets = {}
@@ -16,8 +17,8 @@ end
 
 function love.draw()
 	love.graphics.clear()
-	Bullet.batch.draw()
-	Monster.batch.draw()
+	love.graphics.draw(Bullet.batch)
+	love.graphics.draw(Monster.batch)
 	player:draw()
 	Bullet.batch:clear()
 	Monster.batch:clear()
@@ -26,7 +27,7 @@ end
 function love.update(dt)
 	makeMonster(dt)
 	for _, bullet in pairs(bullets) do bullet:update() end
-	for _, monster in pairs(monsters) do monsters:update() end 
+	for _, monster in pairs(monsters) do monster:update() end 
 end
 
 function makeMonster(dt)
