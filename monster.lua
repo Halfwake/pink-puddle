@@ -1,4 +1,5 @@
 require 'util'
+require 'resource'
 
 Monster = {}
 Monster.batch = lobe.graphics.newSpriteBatch(IMAGE.monster, MAX_BULLETS, "stream")
