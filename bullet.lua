@@ -41,7 +41,7 @@ function Bullet.new(x, y, dx, dy, orientation)
 	newBullet.dx = dx
 	newBullet.dy = dy
 	newBullet.orientation = 0
-	newBullet.speed = 500
+	newBullet.speed = 250
 	return newBullet
 end
 

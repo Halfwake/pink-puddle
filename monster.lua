@@ -33,18 +33,28 @@ end
 
 function monsterTemplate:shoot()
 	local slope = (self.y - self.target.y) / (self.x - self.target.x)
-	local orientation = math.atan(slope)
+	local distance = math.sqrt(math.pow(self.y - self.target.y, 2) + math.pow(self.x - self.target.x, 2))
+	local orientation = math.atan(self.y - self.target.y, self.x - self.target.x) --fix this later
 	local dx
 	local dy
-	if self.target.y - self.y == 0 then
-		dy = 0
+	if distance == 0 then
+		dy = nil
 	else
-		dy = 1 / (self.target.y - self.y) 
+		dy = (self.target.y - self.y) / distance
 	end
-	if self.target.x - self.x == 0 then
-		dx = 0
+	if distance == 0 then
+		dx = nil
 	else
-		dx = 1 / (self.target.x - self.x)
+		dx = (self.target.x - self.x) / distance
+	end
+	--in case the distance on either axis is zero
+	if not dx and not dy then
+		dx = 0.5
+		dy =0.5
+	elseif not dx then
+		dx = 1 - dy
+	elseif not dy then
+		dy = 1 - dx
 	end
 	table.insert(Bullet.bullets, Bullet.new(self.x, self.y, dx, dy, orientation))
 end

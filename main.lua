@@ -29,14 +29,21 @@ function love.draw()
 end
 
 function love.update(dt)
+	player:update(dt)
 	makeMonster(dt)
 	for _, bullet in pairs(bullets) do
 		local dead = bullet:update(dt)
-		if dead then bullets[dead] = nil end
+		if dead then
+			bullets[dead] = nil
+			bulletCount = bulletCount - 1
+		end
 	end
 	for _, monster in pairs(monsters) do
 		local dead = monster:update(dt)
-		if dead then monsters[dead] = nil end
+		if dead then
+			monsters[dead] = nil
+			monsterCount = monsterCount - 1
+		end
 	end 
 end
 
