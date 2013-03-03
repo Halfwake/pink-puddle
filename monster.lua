@@ -1,4 +1,5 @@
 require 'util'
+require 'resource'
 
 Monster = {}
 Monster.batch = lobe.graphics.newSpriteBatch(IMAGE.monster, MAX_BULLETS, "stream")
@@ -7,6 +8,7 @@ function Monster.new(x, y)
 	newMonster = table.shallow_copy(monsterTemplate)	
 	newMonster.x = x
 	newMonster.y = y
+	self.orientation = 0
 	return newMonster
 end
 
@@ -18,6 +20,7 @@ function monsterTemplate:move(dx, dy)
 end
 
 function monsterTemplate:update()
+	Monster.batch:add(self.x, self.y self.orientation)
 end
 
 function monsterTemplate:shoot(target)

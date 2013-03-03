@@ -4,6 +4,7 @@ require 'resource'
 
 Bullet = {}
 Bullet.batch = lobe.graphics.newSpriteBatch(IMAGE.bullet, MAX_BULLETS, "stream")
+
 function Bullet.new(x, y, dx, dy)
 	newBullet = table.shallow_copy(bulletTemplate)
 	newBullet.x = x

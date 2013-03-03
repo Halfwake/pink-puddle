@@ -13,5 +13,6 @@ end
 
 playerTemplate = {}
 
-function playerTempalte:
+function playerTempalte:draw()
+	love.graphics.draw(self.image, self.x + self.image:getWidth(), self.y + self.image:getHeight())
 end
