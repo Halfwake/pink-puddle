@@ -8,16 +8,32 @@ local playerTemplate = {}
 function playerTemplate:draw()
 	local r, g, b, a = love.graphics.getColor()
 	local old_mode love.graphics.getColorMode()
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4])
-	love.graphics.draw(self.image, math.round(self.x - self.image:getWidth() / 2), math.round(self.y - self.image:getHeight() / 2))
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.getColorMode(old_mode)
+
+	local canDraw = false
+	if player.injuryFlickerDelta < 0 then
+		canDraw = true	
+	else
+		if player.injurySwitch then
+			canDraw = true
+		end
+		player.injurySwitch = not player.injurySwitch
+	end
+
+	if canDraw then	
+		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4])
+		love.graphics.draw(self.image, math.round(self.x - self.image:getWidth() / 2), math.round(self.y - self.image:getHeight() / 2))
+		love.graphics.setColor(r, g, b, a)
+		love.graphics.getColorMode(old_mode)
+	end
 end
 
 function playerTemplate:update(dt)
 	local dx, dy
 	self:reactInput(dt)
 	self.shootDelta = self.shootDelta - dt
+	if self.injuryFlickerDelta then 
+		player.injuryFlickerDelta = player.injuryFlickerDelta - dt
+	end
 end
 
 function playerTemplate:move(dx, dy, dt)
@@ -77,6 +93,10 @@ end
 function playerTemplate:loseHealth(damage)
 	self.health = self.health - damage
 	self.injuryFlickerDelta = INJURY_DELAY
+end
+
+function playerTemplate:isAlive()
+	return self.health > 0
 end
 
 function Player.new(x, y)

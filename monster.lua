@@ -23,15 +23,8 @@ Entity.Constructors.YellowBouncer = Entity.newConstructor(
 	{
 		{	
 			Entity.moveAuto,
+			Entity.bounce,
 			Entity.updateFireDelta,
-			function(self, dt)
-				if self.x < 0 or self.x > love.graphics.getWidth() then
-					self.dx = -self.dx 
-				end
-				if self.y < 0 or self.y > love.graphics.getHeight() then
-					self.dy = -self.dy
-				end
-			end
 		}
 	},
 	Entity.batches.YellowBouncer
@@ -53,6 +46,7 @@ Entity.Constructors.GreenChaser = Entity.newConstructor(
 	{
 		{	
 			Entity.follow,
+			Entity.autoMove
 		}
 	},
 	Entity.batches.GreenChaser
@@ -75,19 +69,44 @@ Entity.Constructors.OctoShot = Entity.newConstructor(
 	{
 		{	
 			Entity.follow,
+			Entity.autMove
 		}
 	},
 	Entity.batches.OctoShot
 )
 
-function demonPigTemplate:shoot()
-	local orientation = 0
-	if self.shootMode == 'beam' then
-		self:shootBeam()
-	elseif self.shootMode == 'spray' then
-		self:shootSpray()
-	end
-end
+Entity.Constructors.PigDemon = Entity.newConstructor(
+	{'x', 'y', 'target'},
+	{
+		{loseHealth = Entity.loseHealth},
+		{
+			orientation = 0,
+			health = 50,
+			damage = 25,
+			points = 75,
+			speed = 100
+			fireDelay = 2.5
+			bulletType = Entity.Constructors.DemonPig
+		}
+	},
+	{
+		{	
+			Entity.bounce,
+			Entity.follow,
+			Entity.autoMove
+			function(self, dt)
+				if self.shootMode ~= 'spray' then
+					Entity.shootBeam(self)
+					self.shootMode = 'spray'
+				elseif self.shootMode == 'beam' then
+					Entity.shootBeam(self)
+					self.shootMode = 'beam'
+				end
+			end
+		}
+	},
+	Entity.batches.DemonPig
+)
 
 function Monster.DemonPig.new(x, y, target)
 	local newDemonPig = Monster.new(x, y, target)

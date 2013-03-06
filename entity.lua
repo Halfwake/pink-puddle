@@ -12,8 +12,20 @@ Entity.batches = {
 		 }
 Entity.entities = {}
 
-function Entity.add(newEntity)
-	table.insert(Entity.entities, newEntity)
+function Entity.add(entity)
+	table.insert(Entity.entities, entity)
+end
+
+function Entity.remove(entity)
+	Entity.entities[table.index(Entity.entities, entity)] = nil
+end
+
+function Entity.draw()
+	for _, entity in pairs(Entity.entities) do entity:addBatch() end
+	for _,batch in Entity.batches do
+		love.graphics.draw(batch)
+		batch:clear()
+	end
 end
 
 function Entity.newConstructor(supers, constructorArguments, mixins, updateMixins, image)
@@ -49,10 +61,20 @@ function Entity.isAlive(self)
 	return self.health > 0
 end
 
+function Entity.bounce(self, dt)
+	if self.x < 0 or self.x > love.graphics.getWidth() then
+		self.dx = -self.dx 
+	end
+	if self.y < 0 or self.y > love.graphics.getHeight() then
+		self.dy = -self.dy
+	end
+end
+
+
 function Entity.loseHealth(self, damage)
 	self.health = self.health - damage
 	if not Entity.isAlive(self) then
-		Entity.entities[table.index(Entity.entities, self)] = nil
+		Entity.remove(self)	
 	end
 end
 
@@ -143,10 +165,9 @@ function Entity.follow(self, dt)
 	else
 		dy = 0
 	end
-	Entity.autoMove(dt)
 end
 
-function monsterTemplate:shootStraight()
+function Entity.shootStraight(self)
 	local slope = Entity.getSlope(self.target)
 	local distance = Entity.getDistance(self.target) 
 	local orientation = 0--math.atan(self.y - self.target.y, self.x - self.target.x) --fix this later
