@@ -16,12 +16,8 @@ end
 
 function playerTemplate:update(dt)
 	local dx, dy
-	dx, dy = self:getInput(dt)
-	self:move(dx, dy, dt)
+	self:reactInput(dt)
 	self.shootDelta = self.shootDelta - dt
-	if self.health <= 0 then
-		return self
-	end
 end
 
 function playerTemplate:move(dx, dy, dt)
@@ -39,7 +35,7 @@ function playerTemplate:move(dx, dy, dt)
 	end
 end
 
-function playerTemplate:getInput(dt)
+function playerTemplate:reactInput(dt)
 	if player.shootDelta <= 0 then
 		if love.keyboard.isDown('w') then
 			player:shootBullet(0, -1)
@@ -64,7 +60,7 @@ function playerTemplate:getInput(dt)
 	if love.keyboard.isDown('right') then
 		dx = 1
 	end
-	return dx, dy
+	self:move(dx, dy)
 end
 
 function playerTemplate:shootBullet(dx, dy)
