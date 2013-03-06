@@ -10,9 +10,6 @@ function love.load()
 	math.randomseed(os.time())
 	love.graphics.setCaption("Pink Puddle")
 	love.graphics.setBackgroundColor(LightPink)
-	monsterCount = 0
-	bulletCount = 0
-	levelCount = 0
 	monsterSpawnDelta = SPAWN_DELAY
 	SOUND.play_theme:setLooping(true)
 	gameMode = 'start'
@@ -54,33 +51,8 @@ function love.update(dt)
 		end
 		if hasLevelStarted(dt) then makeMonster(dt) end
 		player:update(dt)
-		collisionUpdate(dt)	
-	end
-end
-
-function collisionUpdate(dt)
-	for _, entity in pairs(Entity.entities) do
-		entity:update(dt)
-	end
-	for _, entityOne in pairs(Entity.entities) do
-		if entityOne:isTouching(player) and not entityOne.friendly and entityOne.damage then
-			player:takeHit(entityOne)
-		end
-	end
-	for _, entityOne in pairs(Entity.entities) do
-		for _, entityTwo in pairs(Entity.entities) do
-			if entityOne:isTouching(entityTwo) and entityOne.friendly ~= entityTwo.friendly then
-				if entityOne.health and entityTwo.damage then
-					entityOne.health = entityOne.health - entityTwo.damage
-				else
-					Entity.remove(entityOne)
-				end
-				if entityTwo.health and entityTwo.damage then
-					entityTwo.health = entityTwo.health - entityOne.damage
-				else
-					Entity.remove(entityTwo)
-				end
-			end
+		for _, entity in pairs(Entity.entities) do
+			entity:update(dt)
 		end
 	end
 end
@@ -121,6 +93,9 @@ function gamePlay()
 		love.audio.play(SOUND.play_theme)
 	end
 	if gameMode ~= 'pause' then
+		levelCount = 0
+		Entity.monsterCount = 0
+		bulletCount = 0
 		player = Player.new(30, 30)
 		nextLevel()
 	end
@@ -135,17 +110,25 @@ end
 
 
 function makeMonster(dt)
-	if monsterCount < MAX_MONSTERS and monsterCount < level.maxMonsters then
+	if Entity.monsterCount < MAX_MONSTERS and Entity.monsterCount < level.maxMonsters then
 		if monsterSpawnDelta > 0 then
 			monsterSpawnDelta = monsterSpawnDelta - dt
 		else
 			monsterSpawnDelta = level.monsterSpawnTime
-			monsterCount = monsterCount + 1
+			Entity.monsterCount = Entity.monsterCount + 1
 			local enemiesLeft = false
-			local mixedConstructors = table.shallow_copy(Entity.Constructors)
-			for index, constructor in pairs(mixedConstructors) do
+			for index, constructor in pairs(Entity.Constructors) do
 				if level[index] and level[index] > 0 then
-					Entity.add(constructor(math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight()), player))	
+					local newEntity = constructor(0, 0, player)
+					local width, height
+					width, height = newEntity.batchPointer:getImage():getWidth(), newEntity.batchPointer:getImage():getHeight()
+					local x, y
+					x, y = math.randint(width, love.graphics.getWidth()), math.randint(height, love.graphics.getHeight())
+					while math.distance(x, y, player.x, player.y) <= MIN_SPAWN_DISTANCE do
+						x, y = math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight())
+					end
+					newEntity.x, newEntity.y = x, y
+					Entity.add(newEntity)
 					level[index] = level[index] - 1
 					enemiesLeft = true
 					break

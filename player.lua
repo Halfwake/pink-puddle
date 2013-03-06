@@ -22,7 +22,7 @@ function playerTemplate:draw()
 
 	if canDraw then	
 		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4])
-		love.graphics.draw(self.image, math.round(self.x - self.image:getWidth() / 2), math.round(self.y - self.image:getHeight() / 2))
+		love.graphics.draw(self.image, math.round(self.x - self.image:getWidth() / 2), math.round(self.y - self.image:getHeight() / 2), 0)
 		love.graphics.setColor(r, g, b, a)
 		love.graphics.getColorMode(old_mode)
 	end
@@ -33,6 +33,13 @@ function playerTemplate:update(dt)
 	self.shootDelta = self.shootDelta - dt
 	if self.injuryFlickerDelta then 
 		player.injuryFlickerDelta = player.injuryFlickerDelta - dt
+	end
+	for _, entity in pairs(Entity.entities) do
+		if Entity.isTouching(self, entity) then
+			if (not (self.friendly ~= true and entity.friendly ~= true) and not (self.friendly == true and entity.friendly == true)) then
+				player:takeHit(entity)
+			end
+		end
 	end
 end
 
@@ -48,6 +55,11 @@ function playerTemplate:move(dx, dy, dt)
 		self.y = self.image:getHeight() / 2
 	elseif self.y + self.image:getHeight() / 2 > love.graphics.getHeight() then
 		self.y = love.graphics.getHeight() - self.image:getHeight() / 2
+	end
+	if dx < 0 then
+		self.image = IMAGE.player_right
+	elseif dx > 0 then
+		self.facing = IMAGE.player_left
 	end
 end
 
@@ -106,8 +118,8 @@ function Player.new(x, y)
 	newPlayer.x = x
 	newPlayer.y = y
 	newPlayer.speed = 200
-	newPlayer.image = IMAGE.player
-	newPlayer.health = 50
+	newPlayer.image = IMAGE.player_right
+	newPlayer.health = 100
 	newPlayer.score = 0
 	newPlayer.shootDelta = 0
 	newPlayer.injuryFlickerDelta = 0

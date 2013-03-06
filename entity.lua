@@ -14,12 +14,19 @@ Entity.batches = {
 		 }
 Entity.entities = {}
 Entity.Constructors = {}
+Entity.bulletCount = 0
+Entity.monsterCount = 0
 
 function Entity.add(entity)
 	table.insert(Entity.entities, entity)
 end
 
 function Entity.remove(entity)
+	if entity.type == 'monster' then
+		Entity.monsterCount = Entity.monsterCount - 1
+	elseif entity.type == 'bullet' then
+		Entity.bulletCount = Entity.bulletCount - 1
+	end
 	Entity.entities[table.index(Entity.entities, entity)] = nil
 end
 
@@ -32,15 +39,23 @@ function Entity.draw()
 end
 
 function Entity.isTouching(self, target)
-	local distance_squared = math.pow(self.y - target.y, 2) +  math.pow(self.x - target.x, 2)
-	local width
-	if target.image then
-		width = target.image:getWidth()
+	local distance = Entity.distance(self, target)
+	local self_width
+	if self.image then
+		self_width = self.image:getWidth()
 	else
-		width = target.batchPointer:getImage():getWidth()
+		self_width = self.batchPointer:getImage():getWidth()
 	end
-	local radius_squared = math.pow(width / 2, 2)
-	if radius_squared >= distance_squared then
+	local target_width
+	if target.image then
+		target_width = target.image:getWidth()
+	else
+		target_width = target.batchPointer:getImage():getWidth()
+	end
+	local width
+	if self_width > target_width then width = self_width else width = target_width end
+	local radius = width / 2
+	if radius >= distance then
 		return true
 	end
 	return false
@@ -70,24 +85,31 @@ function Entity.newConstructor(supers, constructorArguments, mixins, updateMixin
 					method(newObject, dt)
 				end
 			end
+			Entity.collisionCheck(newObject, dt)
 		end
 		newObject.batchPointer = batchPointer
-		newObject.isTouching = Entity.isTouching
 		Entity.add(newObject)
+		if newObject.type == 'monster' then
+			Entity.monsterCount = Entity.monsterCount + 1
+		elseif newObject.type == 'bullet' then
+			Entity.bulletCount = Entity.bulletCount + 1
+		end
 		return newObject
 	end
 end
 
 
 function Entity.isAlive(self)
-	return self.health > 0
+	return (self.health > 0) or self.invuln
 end
 
 function Entity.bounce(self, dt)
-	if self.x < 0 or self.x > love.graphics.getWidth() then
-		self.dx = -self.dx 
+	if self.x < 0 or self.x > love.graphics.getWidth() - self.batchPointer:getImage():getHeight() / 2 then
+		if self.x < 0 then self.x = 0 else self.x = love.graphics.getWidth() - self.batchPointer:getImage():getHeight() / 2 end
+		self.dx = -self.dx
 	end
-	if self.y < 0 or self.y > love.graphics.getHeight() then
+	if self.y < 0 or self.y > love.graphics.getHeight() - self.batchPointer:getImage():getWidth() / 2 then
+		if self.y < 0 then self.y = 0 else self.y = love.graphics.getHeight() - self.batchPointer:getImage():getWidth() / 2 end
 		self.dy = -self.dy
 	end
 end
@@ -109,17 +131,38 @@ function Entity.move(self, dt, dx, dy)
 	self.y = self.y + dy * dt * self.speed
 end
 
+function Entity.loseHealth(self, damage)
+	self.health = self.health - damage
+end
+
 function Entity.takeHit(self, hitter)
-	self.health = self.health - hitter.damage
+	Entity.loseHealth(self, hitter.damage)
 end
 
 function Entity.updateFireDelta(self, dt)
+	if not self.fireDelta then self.fireDelta = 0 end
 	self.fireDelta = self.fireDelta - dt
 	if self.fireDelta <= 0 then
-		self:fire()
-		self.fireDelta = self.fireDelay
+		if Entity.bulletCount < MAX_BULLETS then
+			self:fire()
+			self.fireDelta = self.fireDelay
+		end
 	end
 end
+
+function Entity.collisionCheck(self, dt)
+	for _, entity in pairs(Entity.entities) do
+		if entity ~= self then 
+			if Entity.isTouching(self, entity) then
+				if (not (self.friendly ~= true and entity.friendly ~= true) and not (self.friendly == true and entity.friendly == true)) then
+					Entity.loseHealth(self, entity.damage)
+					Entity.loseHealth(entity, self.damage)
+				end
+			end
+		end
+	end
+end
+
 
 function Entity.addBatch(self)
 	local image = self.batchPointer:getImage()
@@ -151,19 +194,21 @@ function Entity.getSlope(self, target)
 end
 
 function Entity.distance(self, target)
-	return math.sqrt(math.pow(self.y - target.y, 2) + math.pow(self.x - target.x, 2))
+	local dx = self.y - target.y
+	local dy = self.x - target.x
+	return math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
 end
 
 function Entity.shootSpray(self)
 	local orientation = 0
-	Entity.add(self.bulletType.new(self.x, self.y, 0.5, 0.5, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, 0.5, -0.5, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, -0.5, 0.5, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, -0.5, -0.5, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, 1, 1, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, 1, -1, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, -1, 1, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, -1, -1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 0.5, 0.5, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 0.5, -0.5, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -0.5, 0.5, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -0.5, -0.5, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 1, 1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 1, -1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -1, 1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -1, -1, orientation, false))
 end
 
 function Entity.follow(self, dt)
@@ -182,9 +227,23 @@ function Entity.follow(self, dt)
 	self.dx, self.dy = dx, dy
 end
 
+function Entity.removeOffScreen(self)
+	if self.x < 0 or self.x > love.graphics.getWidth() then
+		Entity.remove(self)
+	elseif self.y < 0 or self.y > love.graphics.getHeight() then
+		Entity.remove(self)
+	end
+end
+
+function Entity.removeIfDead(self)
+	if not Entity.isAlive(self) then
+		Entity.remove(self)
+	end
+end
+
 function Entity.shootStraight(self)
-	local slope = Entity.getSlope(self.target)
-	local distance = Entity.getDistance(self.target) 
+	local slope = Entity.getSlope(self, self.target)
+	local distance = Entity.distance(self, self.target) 
 	local orientation = 0--math.atan(self.y - self.target.y, self.x - self.target.x) --fix this later
 	local dx
 	local dy
@@ -207,7 +266,7 @@ function Entity.shootStraight(self)
 	elseif not dy then
 		dy = 1 - dx
 	end
-	Entity.add(self.bulletType.new(self.x, self.y, dx, dy, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx, dy, orientation, false))
 end
 
 function Entity.shootBeam(self)
@@ -235,8 +294,8 @@ function Entity.shootBeam(self)
 	elseif not dy then
 		dy = 1 - dx
 	end
-	Entity.add(self.bulletType.new(self.x, self.y, dx, dy, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, dx - 0.10, dy + 0.10, orientation, false))
-	Entity.add(self.bulletType.new(self.x, self.y, dx + 0.10, dy - 0.10, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx, dy, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx - 0.10, dy + 0.10, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx + 0.10, dy - 0.10, orientation, false))
 end
 

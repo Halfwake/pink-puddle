@@ -14,6 +14,10 @@ function math.randsin()
 	end
 end
 
+function math.distance(x1, y1, x2, y2)
+	return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
+end
+
 function table.join(t1, t2) --t2 overrides t1 keys
 	t3 = table.shallow_copy(t1)
 	for k, v in pairs(t2) do

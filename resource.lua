@@ -1,6 +1,7 @@
 IMAGE = {
 		tile_nil = love.graphics.newImage('tile_nil.png'),
-		player = love.graphics.newImage('cirno.png'),
+		player_right = love.graphics.newImage('player_right.png'),
+		player_left = love.graphics.newImage('player_left.png'),
 		yellow_shoot = love.graphics.newImage('yellow_shoot.png'),
 		ice_ball = love.graphics.newImage('ice_ball.png'),
 		yellow_bouncer = love.graphics.newImage('yellow_bouncer.png'),
