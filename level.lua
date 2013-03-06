@@ -5,13 +5,31 @@ function Level.new()
 	return newLevel
 end
 
-function Level.One()
+Level[1] = function()
 	local newLevel = Level.new()
-	newLevel.YellowBouncer = 30
+	--newLevel.YellowBouncer = 20
+	--newLevel.GreenChaser = 5
+	newLevel.maxMonsters = 5
+	newLevel.monsterSpawnTime = 2
+	newLevel.DemonPig = 1
+	return newLevel
+end
+
+Level[2] = function()
+	local newLevel = Level.new()
+	newLevel.OctoShot = 8
+	newLevel.YellowBouncer = 25
 	newLevel.maxMonsters = 10
 	newLevel.monsterSpawnTime = 2
 	return newLevel
 end
 
-function nextLevel()
+Level[3] = function()
+	local newLevel = Level.new()
+	newLevel.YellowBouncer = 10
+	newLevel.OctoShot = 10
+	newLevel.GreenChaser = 10
+	newLevel.maxMonsters = 25
+	newLevel.monsterSpawnTime = 0.50
+	return newLevel
 end

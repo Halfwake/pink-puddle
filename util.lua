@@ -6,6 +6,28 @@ function table.shallow_copy(original_table)
 	return new_table
 end
 
+function math.randsin()
+	if math.random() > 0.5 then
+		return 1
+	else
+		return -1
+	end
+end
+
+function table.join(t1, t2) --t2 overrides t1 keys
+	t3 = table.shallow_copy(t1)
+	for k, v in pairs(t2) do
+		t3[k] = v
+	end
+	return t3
+end
+
+function table.index(t, item)
+	for k, v in pairs(t) do
+		if v == item then return k end
+	end
+end
+
 function math.randint(a, b)
 	if not b then
 		return math.ceil(math.random() * a) % a
