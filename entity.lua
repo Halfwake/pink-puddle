@@ -1,6 +1,8 @@
 require 'util'
 require 'const'
 
+Entity = {}
+
 Entity.batches = {
 			YellowShoot = love.graphics.newSpriteBatch(IMAGE.yellow_shoot, MAX_BULLETS, "stream"),
 			IceBall = love.graphics.newSpriteBatch(IMAGE.ice_ball, MAX_BULLETS, "stream"),
@@ -11,6 +13,7 @@ Entity.batches = {
 
 		 }
 Entity.entities = {}
+Entity.Constructors = {}
 
 function Entity.add(entity)
 	table.insert(Entity.entities, entity)
@@ -21,36 +24,55 @@ function Entity.remove(entity)
 end
 
 function Entity.draw()
-	for _, entity in pairs(Entity.entities) do entity:addBatch() end
-	for _,batch in Entity.batches do
+	for _, entity in pairs(Entity.entities) do Entity.addBatch(entity) end
+	for _,batch in pairs(Entity.batches) do
 		love.graphics.draw(batch)
 		batch:clear()
 	end
 end
 
-function Entity.newConstructor(supers, constructorArguments, mixins, updateMixins, image)
+function Entity.isTouching(self, target)
+	local distance_squared = math.pow(self.y - target.y, 2) +  math.pow(self.x - target.x, 2)
+	local width
+	if target.image then
+		width = target.image:getWidth()
+	else
+		width = target.batchPointer:getImage():getWidth()
+	end
+	local radius_squared = math.pow(width / 2, 2)
+	if radius_squared >= distance_squared then
+		return true
+	end
+	return false
+end
+
+function Entity.newConstructor(supers, constructorArguments, mixins, updateMixins, batchPointer)
 	local newConstructor = {}
 	local newConstructorTemplate = {}
-	for mixinIndex, mixinin in pairs(mixins) do
-		for memberIndex, member in pairs(mixins) do
+	for mixinIndex, mixin in pairs(mixins) do
+		for memberIndex, member in pairs(mixin) do
 			newConstructorTemplate[memberIndex] = member
 		end
 	end
-	return function newConstructor(...)
+	return function(...)
 		local newObject = {}
 		newObject = table.shallow_copy(newConstructorTemplate)
-		for index, super in supers do
-			newObject = table.join(newObject, super)
+		for index, super in pairs(supers) do
+			newObject = table.join(newObject, Entity.Constructors[super])
 		end
-		for i = 1,(#constructorArguments) do
-			newObject[constructorArguments[i]] = arg[i]
+		for index,arg_name in pairs(constructorArguments) do
+			newObject[arg_name] = arg[index]
 		end
 		newObject.image = image
 		newObject.update = function(self, dt)
-			for _, item in updateMixins do
-				self:(dt)
+			for _, mixin in pairs(updateMixins) do
+				for _, method in pairs(mixin) do
+					method(newObject, dt)
+				end
 			end
 		end
+		newObject.batchPointer = batchPointer
+		newObject.isTouching = Entity.isTouching
 		Entity.add(newObject)
 		return newObject
 	end
@@ -79,7 +101,7 @@ function Entity.loseHealth(self, damage)
 end
 
 function Entity.moveAuto(self, dt)
-	Entity.move(self, dt, dx, dy)
+	Entity.move(self, dt, self.dx, self.dy)
 end
 
 function Entity.move(self, dt, dx, dy)
@@ -123,14 +145,6 @@ function Entity.isEnemy(self, target)
 	return false
 end
 
-function Entity.isTouching(self, target)
-	local distance_squared = math.pow(self.y - target.y, 2) +  math.pow(self.x - target.x, 2)
-	local radius_squared = math.pow(target.image:getWidth() / 3, 2)
-	if radius_squared >= distance_squared then
-		return true
-	end
-	return false
-end
 
 function Entity.getSlope(self, target)
 	return (self.y - self.target.y) / (self.x - self.target.x)
@@ -153,7 +167,7 @@ function Entity.shootSpray(self)
 end
 
 function Entity.follow(self, dt)
-	local distance = Entity.distance(target)
+	local distance = Entity.distance(self, self.target)
 	local dx, dy
 	if (self.x - self.target.x) ~= 0 then
 		dx = (self.x - self.target.x) / -distance
@@ -165,6 +179,7 @@ function Entity.follow(self, dt)
 	else
 		dy = 0
 	end
+	self.dx, self.dy = dx, dy
 end
 
 function Entity.shootStraight(self)
@@ -196,8 +211,8 @@ function Entity.shootStraight(self)
 end
 
 function Entity.shootBeam(self)
-	local slope = Entity.getSlope(self.target)
-	local distance = Entity.distance(self.target)
+	local slope = Entity.getSlope(self, self.target)
+	local distance = Entity.distance(self, self.target)
 	local orientation = 0--math.atan(self.y - self.target.y, self.x - self.target.x) --fix this later
 	local dx
 	local dy

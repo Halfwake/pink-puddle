@@ -10,9 +10,7 @@ function love.load()
 	math.randomseed(os.time())
 	love.graphics.setCaption("Pink Puddle")
 	love.graphics.setBackgroundColor(LightPink)
-	monsters = Monster.monsters
 	monsterCount = 0
-	bullets = Bullet.bullets
 	bulletCount = 0
 	levelCount = 0
 	monsterSpawnDelta = SPAWN_DELAY
@@ -54,25 +52,31 @@ function love.update(dt)
 			gameOver()
 			return
 		end
-		if hasLevelStarted() then makeMonster(dt) end
+		if hasLevelStarted(dt) then makeMonster(dt) end
+		player:update(dt)
 		collisionUpdate(dt)	
 	end
 end
 
 function collisionUpdate(dt)
+	for _, entity in pairs(Entity.entities) do
+		entity:update(dt)
+	end
 	for _, entityOne in pairs(Entity.entities) do
-		if entityOne:touching(player) and not entityOne.friendly then
-			player.health + player.health - entityOne.damage
+		if entityOne:isTouching(player) and not entityOne.friendly and entityOne.damage then
+			player:takeHit(entityOne)
 		end
+	end
+	for _, entityOne in pairs(Entity.entities) do
 		for _, entityTwo in pairs(Entity.entities) do
-			if entityOne:touching(entityTwo) and entityOne.friendly ~= entityTwo.friendly then
-				if entityOne.health and entityOne.damage then
-					entityOne.health = entityOne.health - entityOne.damage
+			if entityOne:isTouching(entityTwo) and entityOne.friendly ~= entityTwo.friendly then
+				if entityOne.health and entityTwo.damage then
+					entityOne.health = entityOne.health - entityTwo.damage
 				else
 					Entity.remove(entityOne)
 				end
 				if entityTwo.health and entityTwo.damage then
-					entityTwo.health = entityTwo.health - entityTwo.damage
+					entityTwo.health = entityTwo.health - entityOne.damage
 				else
 					Entity.remove(entityTwo)
 				end
@@ -107,10 +111,7 @@ end
 
 function gameOver()
 	gameMode = 'gameover'
-	Monster.monsters = {}
-	monsters = Monster.monsters
-	Bullet.bullets = {}
-	bullets = Bullet.bullets
+	Entity.entities = {}
 	levelCount = 0
 end
 
@@ -152,7 +153,7 @@ function makeMonster(dt)
 			end
 			if not enemiesLeft then
 				local entitiesLeftInLevel
-				for _, _ in pairs(Entity.Entites) do
+				for _, _ in pairs(Entity.entities) do
 					entitiesLeftInLevel = true
 				end
 				if not entitiesLeftInLevel then nextLevel() end

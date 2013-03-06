@@ -5,9 +5,10 @@ require 'resource'
 
 
 Entity.Constructors.IceBall = Entity.newConstructor(
+	{},
 	{'x', 'y', 'dx', 'dy', 'orientation', 'target', 'friendly'},
 	{
-		{inBounds = Entity.inBounds, isEnemy = Entity.isEnemy, isTouching = Entity.isTouching},
+		{inBounds = Entity.inBounds, isEnemy = Entity.isEnemy},
 		{speed = 250, damage = 10}
 	},
 	{
@@ -17,9 +18,10 @@ Entity.Constructors.IceBall = Entity.newConstructor(
 )
 
 Entity.Constructors.YellowShoot = Entity.newConstructor(
+	{},
 	{'x', 'y', 'dx', 'dy', 'orientation', 'target', 'friendly'},
 	{
-		{inBounds = Entity.inBounds, isEnemy = Entity.isEnemy, isTouching = Entity.isTouching},
+		{inBounds = Entity.inBounds, isEnemy = Entity.isEnemy},
 		{speed = 350, damage = 15}
 	},
 	{

@@ -1,5 +1,6 @@
 require 'util'
 require 'resource'
+require 'entity'
 
 Player = {}
 
@@ -10,7 +11,7 @@ function playerTemplate:draw()
 	local old_mode love.graphics.getColorMode()
 
 	local canDraw = false
-	if player.injuryFlickerDelta < 0 then
+	if not player.injuryFlickerDelta or player.injuryFlickerDelta < 0 then
 		canDraw = true	
 	else
 		if player.injurySwitch then
@@ -28,7 +29,6 @@ function playerTemplate:draw()
 end
 
 function playerTemplate:update(dt)
-	local dx, dy
 	self:reactInput(dt)
 	self.shootDelta = self.shootDelta - dt
 	if self.injuryFlickerDelta then 
@@ -76,18 +76,19 @@ function playerTemplate:reactInput(dt)
 	if love.keyboard.isDown('right') then
 		dx = 1
 	end
-	self:move(dx, dy)
+	self:move(dx, dy, dt)
 end
 
 function playerTemplate:shootBullet(dx, dy)
 	local orientation = 0
-	table.insert(Bullet.bullets, Bullet.Constructors.IceBall(self.x, self.y, dx, dy, orientation, true))
+	Entity.add(Entity.Constructors.IceBall(self.x, self.y, dx, dy, orientation, nil, true))
 	self.shootDelta = PLAYER_FIRE_DELAY
 end
 
 
 function playerTemplate:takeHit(bullet)
 	self:loseHealth(bullet.damage)
+	Entity.remove(bullet)
 end
 
 function playerTemplate:loseHealth(damage)
@@ -111,6 +112,7 @@ function Player.new(x, y)
 	newPlayer.shootDelta = 0
 	newPlayer.injuryFlickerDelta = 0
 	newPlayer.injurtySwitch = false
+	newPlayer.friendly = true
 	local r, g, b, a = love.graphics.getColor()
 	newPlayer.color = {r, g, b, a}
 	return newPlayer

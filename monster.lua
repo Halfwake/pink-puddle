@@ -1,10 +1,12 @@
 require 'util'
 require 'const'
 require 'resource'
+require 'entity'
 require 'bullet'
 
 
 Entity.Constructors.YellowBouncer = Entity.newConstructor(
+	{},
 	{'x', 'y', 'target'},
 	{
 		{loseHealth = Entity.loseHealth, shootStraight = Entity.shootStraight},
@@ -16,7 +18,7 @@ Entity.Constructors.YellowBouncer = Entity.newConstructor(
 			damage = 50,
 			points = 50,
 			fireDelay = 1.5, 
-			speed = 150
+			speed = 150,
 			bulletType = Entity.Constructors.YellowShoot
 		}
 	},
@@ -31,6 +33,7 @@ Entity.Constructors.YellowBouncer = Entity.newConstructor(
 )
 
 Entity.Constructors.GreenChaser = Entity.newConstructor(
+	{},
 	{'x', 'y', 'target'},
 	{
 		{loseHealth = Entity.loseHealth},
@@ -39,20 +42,21 @@ Entity.Constructors.GreenChaser = Entity.newConstructor(
 			health = 1,
 			damage = 15,
 			points = 25,
-			speed = 210
+			speed = 50,
 			bulletType = Entity.Constructors.YellowShoot
 		}
 	},
 	{
 		{	
 			Entity.follow,
-			Entity.autoMove
+			Entity.moveAuto
 		}
 	},
 	Entity.batches.GreenChaser
 )
 
 Entity.Constructors.OctoShot = Entity.newConstructor(
+	{},
 	{'x', 'y', 'target'},
 	{
 		{loseHealth = Entity.loseHealth, shootStraight = Entity.shootSpray},
@@ -61,8 +65,8 @@ Entity.Constructors.OctoShot = Entity.newConstructor(
 			health = 50,
 			damage = 25,
 			points = 75,
-			speed = 100
-			fireDelay = 2.5
+			speed = 100,
+			fireDelay = 2.5,
 			bulletType = Entity.Constructors.YellowShoot
 		}
 	},
@@ -76,6 +80,7 @@ Entity.Constructors.OctoShot = Entity.newConstructor(
 )
 
 Entity.Constructors.PigDemon = Entity.newConstructor(
+	{},
 	{'x', 'y', 'target'},
 	{
 		{loseHealth = Entity.loseHealth},
@@ -84,8 +89,8 @@ Entity.Constructors.PigDemon = Entity.newConstructor(
 			health = 50,
 			damage = 25,
 			points = 75,
-			speed = 100
-			fireDelay = 2.5
+			speed = 100,
+			fireDelay = 2.5,
 			bulletType = Entity.Constructors.DemonPig
 		}
 	},
@@ -93,7 +98,7 @@ Entity.Constructors.PigDemon = Entity.newConstructor(
 		{	
 			Entity.bounce,
 			Entity.follow,
-			Entity.autoMove
+			Entity.moveAuto,
 			function(self, dt)
 				if self.shootMode ~= 'spray' then
 					Entity.shootBeam(self)
@@ -107,18 +112,3 @@ Entity.Constructors.PigDemon = Entity.newConstructor(
 	},
 	Entity.batches.DemonPig
 )
-
-function Monster.DemonPig.new(x, y, target)
-	local newDemonPig = Monster.new(x, y, target)
-	newDemonPig = table.join(newDemonPig, demonPigTemplate)
-	newDemonPig.speed = 50
-	newDemonPig.damage = 50
-	newDemonPig.points = 500
-	newDemonPig.batchPointer = Monster.batches.DemonPig
-	newDemonPig.bulletType = Bullet.YellowShoot
-	newDemonPig.fireDelay = 1.5
-	newDemonPig.health = 250
-	newDemonPig.shootSpray = Monster.shootSpray
-	newDemonPig.shootBeam = Monster.shootBeam
-	return newDemonPig
-end
