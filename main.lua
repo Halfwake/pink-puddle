@@ -18,6 +18,7 @@ end
 function love.draw()
 	love.graphics.clear()
 	if gameMode == 'play' or gameMode == 'pause' then
+		Particle.draw()
 		Entity.draw()
 		player:draw()
 		love.graphics.print('Score: ' .. tostring(player.score), 0, 0)
@@ -45,6 +46,7 @@ end
 
 function love.update(dt)
 	if gameMode == 'play' then
+		Particle.update(dt)
 		if not player:isAlive() then
 			gameOver()
 			return
@@ -115,7 +117,6 @@ function makeMonster(dt)
 			monsterSpawnDelta = monsterSpawnDelta - dt
 		else
 			monsterSpawnDelta = level.monsterSpawnTime
-			Entity.monsterCount = Entity.monsterCount + 1
 			local enemiesLeft = false
 			for index, constructor in pairs(Entity.Constructors) do
 				if level[index] and level[index] > 0 then
@@ -128,7 +129,6 @@ function makeMonster(dt)
 						x, y = math.randint(0, love.graphics.getWidth()), math.randint(0, love.graphics.getHeight())
 					end
 					newEntity.x, newEntity.y = x, y
-					Entity.add(newEntity)
 					level[index] = level[index] - 1
 					enemiesLeft = true
 					break
@@ -136,10 +136,12 @@ function makeMonster(dt)
 			end
 			if not enemiesLeft then
 				local entitiesLeftInLevel
-				for _, _ in pairs(Entity.entities) do
+				local allFriendly = true
+				for _, entity  in pairs(Entity.entities) do
 					entitiesLeftInLevel = true
+					if not entity.friendly then allFriendly = false end
 				end
-				if not entitiesLeftInLevel then nextLevel() end
+				if not entitiesLeftInLevel or allFriendly then nextLevel() end
 			end
 		end
 	end

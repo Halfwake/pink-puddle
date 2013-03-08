@@ -56,10 +56,10 @@ function playerTemplate:move(dx, dy, dt)
 	elseif self.y + self.image:getHeight() / 2 > love.graphics.getHeight() then
 		self.y = love.graphics.getHeight() - self.image:getHeight() / 2
 	end
-	if dx < 0 then
+	if dx > 0 then
 		self.image = IMAGE.player_right
-	elseif dx > 0 then
-		self.facing = IMAGE.player_left
+	elseif dx < 0 then
+		self.image = IMAGE.player_left
 	end
 end
 
@@ -76,16 +76,16 @@ function playerTemplate:reactInput(dt)
 		end
 	end	
 	local dx, dy = 0, 0
-	if love.keyboard.isDown('up') then
+	if love.keyboard.isDown('up') and not love.keyboard.isDown('down') then
 		dy = -1
 	end
-	if love.keyboard.isDown('down') then
+	if love.keyboard.isDown('down') and not love.keyboard.isDown('up') then
 		dy = 1
 	end
-	if love.keyboard.isDown('left') then
+	if love.keyboard.isDown('left') and not love.keyboard.isDown('right') then
 		dx = -1
 	end
-	if love.keyboard.isDown('right') then
+	if love.keyboard.isDown('right') and not love.keyboard.isDown('left') then
 		dx = 1
 	end
 	self:move(dx, dy, dt)
@@ -93,7 +93,7 @@ end
 
 function playerTemplate:shootBullet(dx, dy)
 	local orientation = 0
-	Entity.add(Entity.Constructors.IceBall(self.x, self.y, dx, dy, orientation, nil, true))
+	Entity.Constructors.IceBall(self.x, self.y, dx, dy, orientation, nil, true)
 	self.shootDelta = PLAYER_FIRE_DELAY
 end
 
@@ -117,7 +117,7 @@ function Player.new(x, y)
 	newPlayer.type = 'player'
 	newPlayer.x = x
 	newPlayer.y = y
-	newPlayer.speed = 200
+	newPlayer.speed = 250
 	newPlayer.image = IMAGE.player_right
 	newPlayer.health = 100
 	newPlayer.score = 0

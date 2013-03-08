@@ -1,16 +1,20 @@
 require 'util'
 require 'const'
+require 'particle'
 
 Entity = {}
 
 Entity.batches = {
-			YellowShoot = love.graphics.newSpriteBatch(IMAGE.yellow_shoot, MAX_BULLETS, "stream"),
-			IceBall = love.graphics.newSpriteBatch(IMAGE.ice_ball, MAX_BULLETS, "stream"),
-			YellowBouncer = love.graphics.newSpriteBatch(IMAGE.yellow_bouncer, MAX_MONSTERS, 'stream'),
-			GreenChaser = love.graphics.newSpriteBatch(IMAGE.green_chaser, MAX_MONSTERS, 'stream'),
-			OctoShot = love.graphics.newSpriteBatch(IMAGE.octo_shooter, MAX_MONSTERS, 'stream'),
-			DemonPig = love.graphics.newSpriteBatch(IMAGE.demon_pig, MAX_MONSTERS, 'stream'),
-
+			YellowShoot = love.graphics.newSpriteBatch(IMAGE.yellow_shoot, MAX_MONSTERS + MAX_BULLETS, "stream"),
+			IceBall = love.graphics.newSpriteBatch(IMAGE.ice_ball, MAX_MONSTERS + MAX_BULLETS, "stream"),
+			YellowBouncer = love.graphics.newSpriteBatch(IMAGE.yellow_bouncer, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			GreenChaser = love.graphics.newSpriteBatch(IMAGE.green_chaser, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			OctoShot = love.graphics.newSpriteBatch(IMAGE.octo_shooter, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			BatBouncer = love.graphics.newSpriteBatch(IMAGE.bat_bouncer, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			DemonPig = love.graphics.newSpriteBatch(IMAGE.demon_pig, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			Coobey = love.graphics.newSpriteBatch(IMAGE.coobey, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			PurpleBouncer = love.graphics.newSpriteBatch(IMAGE.purple_bouncer, MAX_MONSTERS + MAX_BULLETS, 'stream'),
+			Grizz = love.graphics.newSpriteBatch(IMAGE.anger_bear, MAX_MONSTERS + MAX_BULLETS, 'stream'),
 		 }
 Entity.entities = {}
 Entity.Constructors = {}
@@ -18,6 +22,12 @@ Entity.bulletCount = 0
 Entity.monsterCount = 0
 
 function Entity.add(entity)
+	if entity.type == 'monster' then
+		Entity.monsterCount = Entity.monsterCount + 1
+	elseif entity.type == 'bullet' then
+		Entity.bulletCount = Entity.bulletCount + 1
+	end
+	print(Entity.monsterCount, Entity.bulletCount)
 	table.insert(Entity.entities, entity)
 end
 
@@ -89,11 +99,6 @@ function Entity.newConstructor(supers, constructorArguments, mixins, updateMixin
 		end
 		newObject.batchPointer = batchPointer
 		Entity.add(newObject)
-		if newObject.type == 'monster' then
-			Entity.monsterCount = Entity.monsterCount + 1
-		elseif newObject.type == 'bullet' then
-			Entity.bulletCount = Entity.bulletCount + 1
-		end
 		return newObject
 	end
 end
@@ -176,6 +181,12 @@ function Entity.inBounds(self)
 	return true
 end
 
+function Entity.removeIfOutOfBounds(self, dt)
+	if not Entity.inBounds(self) then
+		Entity.remove(self)
+	end
+end
+
 function Entity.setDelta(self, dx, dy)
 	self.dx = dx
 	self.dy = dy
@@ -205,10 +216,10 @@ function Entity.shootSpray(self)
 	Entity.add(self.bulletType(self.x, self.y, 0.5, -0.5, orientation, false))
 	Entity.add(self.bulletType(self.x, self.y, -0.5, 0.5, orientation, false))
 	Entity.add(self.bulletType(self.x, self.y, -0.5, -0.5, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, 1, 1, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, 1, -1, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, -1, 1, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, -1, -1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 1, 0, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, 0, -1, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -1, 0, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, -1, 0, orientation, false))
 end
 
 function Entity.follow(self, dt)
@@ -227,16 +238,9 @@ function Entity.follow(self, dt)
 	self.dx, self.dy = dx, dy
 end
 
-function Entity.removeOffScreen(self)
-	if self.x < 0 or self.x > love.graphics.getWidth() then
-		Entity.remove(self)
-	elseif self.y < 0 or self.y > love.graphics.getHeight() then
-		Entity.remove(self)
-	end
-end
-
 function Entity.removeIfDead(self)
 	if not Entity.isAlive(self) then
+		if self.points then player.score = player.score + self.points end
 		Entity.remove(self)
 	end
 end
@@ -295,7 +299,7 @@ function Entity.shootBeam(self)
 		dy = 1 - dx
 	end
 	Entity.add(self.bulletType(self.x, self.y, dx, dy, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, dx - 0.10, dy + 0.10, orientation, false))
-	Entity.add(self.bulletType(self.x, self.y, dx + 0.10, dy - 0.10, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx - 0.10, dy - 0.10, orientation, false))
+	Entity.add(self.bulletType(self.x, self.y, dx + 0.10, dy + 0.10, orientation, false))
 end
 

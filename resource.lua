@@ -10,6 +10,10 @@ IMAGE = {
 		gameover_screen = love.graphics.newImage('gameover_screen.png'),
 		octo_shooter = love.graphics.newImage('octo_shooter.png'),
 		demon_pig = love.graphics.newImage('demon_pig.png'),
+		bat_bouncer = love.graphics.newImage('bat_bouncer.png'),
+		coobey = love.graphics.newImage('coobey.png'),
+		purple_bouncer = love.graphics.newImage('purple_bouncer.png'),
+		anger_bear = love.graphics.newImage('anger_bear.png'),
 	}
 
 SOUND = {
